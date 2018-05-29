@@ -1,0 +1,25 @@
+{{#each errors}} <!-- loops in handlebars -->
+    <div class="alert alert-danger">{{text}}</div> <!-- suntem in loop-ul cu errors si putem accesa atributul text a errors la care suntem -->
+{{else}}
+{{/each}}
+
+<div class="card card-body">
+    <h3>modificare detalii comanda</h3>
+    <form action="/comenzi/{{comenzi.id}}?_method=PUT" method="post">
+        <div class="form-group">
+            <input type="hidden" name="_method" value="PUT">
+            <label for="produs">produs</label>
+            <input type="text" class="form-control" name="produs" value="{{comenzi.produs}}">
+        </div>
+        <div class="form-group">
+            <label for="tel">nr. telefon</label>
+            <input type="text" class="form-control" name="tel" value="{{comenzi.tel}}">
+        </div>
+        <div class="form-group">
+            <label for="nume">nume client</label>
+            <input type="text" class="form-control" name="nume" value="{{comenzi.nume}}">
+        </div>
+        <button type="submit" class="btn btn-primary">salveaza</button>
+        <a href="/" class="btn btn-info">inapoi</a>
+    </form>
+</div>

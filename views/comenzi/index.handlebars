@@ -1,7 +1,14 @@
+<a href="/comenzi/add" class="btn btn-primary mb-3">adauga comanda</a>
+
 {{#each comenzi}}
     <div class="card card-body mb-1">
         <h4>{{produs}}</h4>
         <h5>{{tel}} {{nume}}</h5>
+        <a href="/comenzi/edit/{{id}}" class="btn btn-dark">modifica</a>
+        <form method="post" action ="/comenzi/{{id}}?_method=DELETE">
+        <input type="hidden" name="_method" value="DELETE">
+        <input type="submit" class="btn btn-success btn-block" value="elimina">
+        </form>
     </div>
 {{else}}
     <p>nu sunt comenzi</p>

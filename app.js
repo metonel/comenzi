@@ -1,5 +1,8 @@
 const express = require('express');
 const exphbs = require('express-handlebars');
+const methodOverride = require('method-override');
+const flash = require('connect-flash');
+const session = require('express-session');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 
@@ -26,18 +29,30 @@ app.engine('handlebars', exphbs({
 }));
 app.set('view engine', 'handlebars');
 //body-parser pt a prelua datele din form
-app.use(bodyParser.urlencoded({ extended: false }))
-app.use(bodyParser.json())
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json());
+
+app.use(methodOverride('_method')); //pt a face put request la edit
+
+//express session
+app.use(session({
+    secret: 'secret',
+    resave: true,
+    saveUninitialized: true
+  }));
+
+//flash messages
+app.use(flash());
+//variabile globale, pt mesaje
+app.use(function(req, res, next){
+    res.locals.msg_success = req.flash('msg_success');
+    res.locals.msg_error = req.flash('msg_error');
+    next();
+});
+
 
 //routes
 app.get('/', (req, res) =>{
-    const titlu = 'panou comenzi';
-    res.render('INDEX', {
-        title: titlu
-    });
-});
-
-app.get('/comenzile', (req, res) =>{
     Comenzi.find({})
         .sort({data:'desc'})
         .then(comenzi => {
@@ -47,9 +62,26 @@ app.get('/comenzile', (req, res) =>{
         });
 });
 
+
+//adaugare comanda
+
 app.get('/comenzi/add', (req, res) =>{
     res.render('comenzi/add');
 });
+
+//editare comanda
+
+app.get('/comenzi/edit/:id', (req, res) =>{
+    Comenzi.findOne({
+        _id: req.params.id
+    })
+        .then(comenzi => {
+            res.render('comenzi/edit', {
+                comenzi:comenzi
+            });
+        });
+});
+
 
 app.post('/comenzi', (req, res) =>{
     let errors = [];
@@ -73,12 +105,41 @@ app.post('/comenzi', (req, res) =>{
         }
         new Comenzi(comanda)         //vine de aici *1
                 .save()
-                .then(comenzi => {
-                    res.redirect('/comenzile');
+                .then(comenzi => {                   
+                req.flash('msg_success', 'comanda adaugata');
+                    res.redirect('/');
                 })
     }
 });
 
+//procesul pt edit
+
+app.put('/comenzi/:id', (req, res) => {
+    Comenzi.findOne({
+        _id: req.params.id
+    })
+        .then(comenzi => {
+            comenzi.produs = req.body.produs;
+            comenzi.tel = req.body.tel;
+            comenzi.nume = req.body.nume;
+
+            comenzi.save()
+                .then(comenzi => {
+                    req.flash('msg_success', 'comanda modificata');
+                    res.redirect('/');
+                })
+        });
+});
+
+//sterge
+
+app.delete('/comenzi/:id', (req, res) => {
+    Comenzi.remove({_id: req.params.id})
+        .then(() => {
+            req.flash('msg_success', 'comanda eliminata');
+            res.redirect('/');
+        });
+});
 
 const port = 5000;
 
